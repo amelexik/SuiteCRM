@@ -72,6 +72,10 @@ array(
         array(
           'file' => 'modules/Accounts/Account.js',
         ),
+        1 =>
+        array(
+          'file' => 'modules/Accounts/Account-extra.js',
+        ),
       ),
       'useTabs' => false,
       'tabDefs' =>
@@ -122,6 +126,17 @@ array(
             'name' => 'phone_fax',
             'label' => 'LBL_FAX',
           ),
+          2 => array(
+            'name'  => 'sale_status_c',
+            'label' => 'LBL_SALE_STATUS',
+            'displayParams' =>
+              array(
+               'field' =>
+                array(
+                 'onChange' => 'displayChangeSaleStatusReason()',
+                ),
+              ),
+            ),
         ),
         2 =>
         array(

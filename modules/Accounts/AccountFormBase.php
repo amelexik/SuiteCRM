@@ -508,10 +508,23 @@ EOQ;
             sugar_cleanup(true);
         }
 
+        // check change sale status. Important - do this BEFORE SAVE
+        $isChengedSaleStatus = $this->isChanged('sale_status_c', $focus);
+
         $focus->save($check_notify);
         $return_id = $focus->id;
 
-        $GLOBALS['log']->debug("Saved record with id of ".$return_id);
+        // create custom note
+        $saleStatusReason = trim($_POST[$prefix . 'sale_status_c_reason']);
+        if ($isChengedSaleStatus && !empty($saleStatusReason)) {
+            $saleStatusReason = $this->db->quoted($saleStatusReason);
+            $note = $this->newNote($return_id);
+            $note->name = 'Sales Status UPDATE: ' . $focus->sale_status_c . ' - ' . $focus->name;
+            $note->description = $saleStatusReason;
+            $note->save();
+        }
+
+        $GLOBALS['log']->debug("Saved record with id of " . $return_id);
 
 
         if (!empty($_POST['is_ajax_call']) && $_POST['is_ajax_call'] == '1') {
@@ -557,5 +570,40 @@ EOQ;
         } else {
             return $focus;
         }
+    }
+
+
+    /**
+     * @param $parentId
+     * @return Note
+     */
+    private function newNote($parentId)
+    {
+        $note = BeanFactory::newBean('Notes');
+        $note->parent_type = 'Accounts';
+        $note->parent_id = $parentId;
+        $note->not_use_rel_in_req = true;
+
+        return $note;
+    }
+
+
+    /**
+     * @param $field
+     * @param $focus
+     * @return bool
+     */
+    private function isChanged($field, &$focus)
+    {
+
+        if (!isset($focus->{$field})) {
+            return false;
+        }
+
+        if (!isset($focus->fetched_row[$field])) {
+            return false;
+        }
+
+        return $focus->fetched_row[$field] !== $focus->{$field};
     }
 }
